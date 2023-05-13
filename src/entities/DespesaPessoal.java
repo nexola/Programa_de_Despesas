@@ -1,6 +1,11 @@
 package entities;
 
+import javax.swing.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +16,21 @@ public class DespesaPessoal {
 
     public DespesaPessoal(String cpf) {
         this.cpf = cpf;
+
+        try (BufferedReader br = new BufferedReader(new FileReader("src\\archives\\doc.txt"))) {
+
+            String line = br.readLine();
+
+            while (line != null) {
+                String[] list = line.split(",");
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                despesas.add(new Despesa(LocalDate.parse(list[0], dtf), list[1], Double.parseDouble(list[2])));
+                line = br.readLine();
+            }
+
+        } catch (IOException e) {
+            System.out.println("Erro: " + e.getMessage());
+        }
     }
 
     public String getCpf() {
@@ -46,15 +66,29 @@ public class DespesaPessoal {
     }
 
     public void imprime() {
-        despesas.forEach(System.out::print);
+        String listaDespesas = "";
+        for (int i = 0; i < despesas.size(); i++) {
+            listaDespesas = listaDespesas.concat(i+1 + " - " + despesas.get(i).toString());
+        }
+        JOptionPane.showMessageDialog(null, listaDespesas);
     }
 
     public void imprime(Integer mes, Integer ano) {
-        despesas.stream().filter(x -> x.getData().getMonthValue() == mes && x.getData().getYear() == ano).forEach(System.out::print);
+        List<Despesa> newDespesas = despesas.stream().filter(x -> x.getData().getMonthValue() == mes && x.getData().getYear() == ano).toList();
+        String listaDespesas = "";
+        for (int i = 0; i < newDespesas.size(); i++) {
+            listaDespesas = listaDespesas.concat(i+1 + " - " + newDespesas.get(i).toString());
+        }
+        JOptionPane.showMessageDialog(null, listaDespesas);
     }
 
     public void imprime(LocalDate data) {
-        despesas.stream().filter(x -> x.getData().isEqual(data)).forEach(System.out::print);
+        List<Despesa> newDespesas = despesas.stream().filter(x -> x.getData().isEqual(data)).toList();
+        String listaDespesas = "";
+        for (int i = 0; i < newDespesas.size(); i++) {
+            listaDespesas = listaDespesas.concat(i+1 + " - " + newDespesas.get(i).toString());
+        }
+        JOptionPane.showMessageDialog(null, listaDespesas);
     }
 
     @Override

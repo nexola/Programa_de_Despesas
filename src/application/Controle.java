@@ -1,9 +1,14 @@
-package entities;
+package application;
+
+import entities.Despesa;
+import entities.DespesaPessoal;
 
 import javax.swing.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 public class Controle {
     private Integer dia;
@@ -28,7 +33,7 @@ public class Controle {
     }
 
     public void itemDespesa() {
-        itemDespesa = JOptionPane.showInputDialog("Descrição");
+        itemDespesa = JOptionPane.showInputDialog("Descrição da despesa");
     }
 
     public void valor() {
@@ -41,7 +46,6 @@ public class Controle {
         entradaDia();
         entradaMes();
         entradaAno();
-
         LocalDate data = LocalDate.parse(String.format("%02d", dia) + "/" + String.format("%02d", mes) + "/" + ano, dtf);
 
         itemDespesa();
@@ -51,6 +55,18 @@ public class Controle {
         Despesa despesa = new Despesa(data, itemDespesa, valor);
 
         despesas.getDespesas().add(despesa);
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("src\\archives\\doc.txt", true))) {
+
+            bw.append("\n")
+                    .append(despesa.getData().format(dtf))
+                    .append(",")
+                    .append(despesa.getDescDespesa())
+                    .append(",").append(despesa.getValor().toString());
+
+        } catch (IOException e) {
+            System.out.println("Erro: " + e.getMessage());
+        }
 
         JOptionPane.showMessageDialog(null, "Despesa criada com sucesso!");
 
@@ -74,7 +90,9 @@ public class Controle {
                             5 - Imprimir todas as despesas
                             6 - Imprimir despesas de um mês/ano
                             7 - Imprimir despesas de um dia/mês/ano
-                            8 - Sair"""));
+                            8 - Atualizar despesa
+                            9 - Excluir despesa
+                            0 - Sair"""));
 
             switch (opcao) {
                 case (1):
@@ -97,21 +115,12 @@ public class Controle {
                     JOptionPane.showMessageDialog(null, despesas.getTotal(data));
                     break;
                 case (5):
-                    String listaDespesas = "";
-                    for (Despesa despesa : despesas.getDespesas()) {
-                        listaDespesas = listaDespesas.concat(despesa.toString());
-                    }
-                    JOptionPane.showMessageDialog(null, listaDespesas);
+                    despesas.imprime();
                     break;
                 case (6):
                     controleDespesas.entradaMes();
                     controleDespesas.entradaAno();
-                    List<Despesa> newDespesas = despesas.getDespesas().stream().filter(x -> x.getData().getMonthValue() == controleDespesas.mes && x.getData().getYear() == controleDespesas.ano).toList();
-                    listaDespesas = "";
-                    for (Despesa despesa : newDespesas) {
-                        listaDespesas = listaDespesas.concat(despesa.toString());
-                    }
-                    JOptionPane.showMessageDialog(null, listaDespesas);
+                    despesas.imprime(controleDespesas.mes, controleDespesas.ano);
                     break;
                 case (7):
                     controleDespesas.entradaDia();
@@ -119,12 +128,7 @@ public class Controle {
                     controleDespesas.entradaAno();
                     dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
                     data = LocalDate.parse(String.format("%02d", controleDespesas.dia) + "/" + String.format("%02d", controleDespesas.mes) + "/" + controleDespesas.ano, dtf);
-                    newDespesas = despesas.getDespesas().stream().filter(x -> x.getData().isEqual(data)).toList();
-                    listaDespesas = "";
-                    for (Despesa despesa : newDespesas) {
-                        listaDespesas = listaDespesas.concat(despesa.toString());
-                    }
-                    JOptionPane.showMessageDialog(null, listaDespesas);
+                    despesas.imprime(data);
                     break;
                 case (8):
                     programa = false;
