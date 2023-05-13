@@ -58,11 +58,7 @@ public class Controle {
 
         try (BufferedWriter bw = new BufferedWriter(new FileWriter("src\\archives\\doc.txt", true))) {
 
-            bw.append("\n")
-                    .append(despesa.getData().format(dtf))
-                    .append(",")
-                    .append(despesa.getDescDespesa())
-                    .append(",").append(despesa.getValor().toString());
+            bw.append("\n").append(despesa.getData().format(dtf)).append(",").append(despesa.getDescDespesa()).append(",").append(despesa.getValor().toString());
 
         } catch (IOException e) {
             System.out.println("Erro: " + e.getMessage());
@@ -81,18 +77,17 @@ public class Controle {
         boolean programa = true;
 
         while (programa) {
-            int opcao = Integer.parseInt(JOptionPane.showInputDialog(
-                    """
-                            1 - Lançamento de despesa
-                            2 - Total geral de despesas
-                            3 - Total de despesas mês/ano
-                            4 - Total de despesas dia/mês/ano
-                            5 - Imprimir todas as despesas
-                            6 - Imprimir despesas de um mês/ano
-                            7 - Imprimir despesas de um dia/mês/ano
-                            8 - Atualizar despesa
-                            9 - Excluir despesa
-                            0 - Sair"""));
+            int opcao = Integer.parseInt(JOptionPane.showInputDialog("""
+                    1 - Lançamento de despesa
+                    2 - Total geral de despesas
+                    3 - Total de despesas mês/ano
+                    4 - Total de despesas dia/mês/ano
+                    5 - Imprimir todas as despesas
+                    6 - Imprimir despesas de um mês/ano
+                    7 - Imprimir despesas de um dia/mês/ano
+                    8 - Atualizar despesa
+                    9 - Excluir despesa
+                    0 - Sair"""));
 
             switch (opcao) {
                 case (1):
@@ -128,9 +123,72 @@ public class Controle {
                     controleDespesas.entradaAno();
                     dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
                     data = LocalDate.parse(String.format("%02d", controleDespesas.dia) + "/" + String.format("%02d", controleDespesas.mes) + "/" + controleDespesas.ano, dtf);
+
                     despesas.imprime(data);
                     break;
                 case (8):
+                    String listaDespesas = "Insira o ID da despesa que deseja alterar\n\n";
+                    for (int i = 0; i < despesas.getDespesas().size(); i++) {
+                        listaDespesas = listaDespesas.concat(i + 1 + " - " + despesas.getDespesas().get(i).toString());
+                    }
+                    int id = Integer.parseInt(JOptionPane.showInputDialog(listaDespesas));
+
+                    controleDespesas.entradaDia();
+                    controleDespesas.entradaMes();
+                    controleDespesas.entradaAno();
+                    dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                    data = LocalDate.parse(String.format("%02d", controleDespesas.dia) + "/" + String.format("%02d", controleDespesas.mes) + "/" + controleDespesas.ano, dtf);
+
+                    controleDespesas.itemDespesa();
+
+                    controleDespesas.valor();
+
+                    despesas.getDespesas().get(id - 1).setData(data);
+                    despesas.getDespesas().get(id - 1).setDescDespesa(controleDespesas.itemDespesa);
+                    despesas.getDespesas().get(id - 1).setValor(controleDespesas.valor);
+
+                    try (BufferedWriter bw = new BufferedWriter(new FileWriter("src\\archives\\doc.txt", false))) {
+
+                        for (int i = 0; i < despesas.getDespesas().size(); i++) {
+
+                            dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                            bw.append(despesas.getDespesas().get(i).getData().format(dtf)).append(",").append(despesas.getDespesas().get(i).getDescDespesa()).append(",").append(despesas.getDespesas().get(i).getValor().toString());
+                            bw.newLine();
+                        }
+
+                        JOptionPane.showMessageDialog(null, "Despesa alterada com sucesso!");
+
+                        System.out.println(despesas.getDespesas());
+
+                    } catch (IOException e) {
+                        System.out.println("Erro: " + e.getMessage());
+                    }
+                    break;
+                case (9):
+                    listaDespesas = "Insira o ID da despesa que deseja excluir\n\n";
+                    for (int i = 0; i < despesas.getDespesas().size(); i++) {
+                        listaDespesas = listaDespesas.concat(i + 1 + " - " + despesas.getDespesas().get(i).toString());
+                    }
+                    id = Integer.parseInt(JOptionPane.showInputDialog(listaDespesas));
+
+                    despesas.getDespesas().remove(id - 1);
+
+                    try (BufferedWriter bw = new BufferedWriter(new FileWriter("src\\archives\\doc.txt", false))) {
+
+                        for (int i = 0; i < despesas.getDespesas().size(); i++) {
+
+                            dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                            bw.append(despesas.getDespesas().get(i).getData().format(dtf)).append(",").append(despesas.getDespesas().get(i).getDescDespesa()).append(",").append(despesas.getDespesas().get(i).getValor().toString());
+                            bw.newLine();
+                        }
+
+                        JOptionPane.showMessageDialog(null, "Despesa excluída com sucesso!");
+
+                    } catch (IOException e) {
+                        System.out.println("Erro: " + e.getMessage());
+                    }
+                    break;
+                case (0):
                     programa = false;
             }
         }
